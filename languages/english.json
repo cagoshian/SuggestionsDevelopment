@@ -60,6 +60,12 @@
   "imageDeletedNotificationTitle": "Image deleted from followed suggestion!",
   "imageDeletedNotificationContent": "Image deleted from followed suggestion in `%guild%`.",
 
+  "invalidImage": "Invalid image link.",
+  "imageSet": "Image attached successfully!",
+
+  "noImageAlready": "This suggestion doesn't have an image attached.",
+  "imageDeleted": "Image deleted successfully!",
+
   "youWillGetDMs": "Hereafter, you will get a DM when an action taken on your followed suggestions.",
   "youWillNotGetDMs": "Hereafter, you will not get a DM when an action taken on your followed suggestions."
 }

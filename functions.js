@@ -370,7 +370,7 @@ module.exports = {
 		
 		const data = db.fetch(`suggestions_${guild.id}.${sugid}`)
 		
-		data.attachment = typeof image == "string" ? image : image.url
+		data.attachment = image
 		db.set(`suggestions_${guild.id}.${sugid}`, data)
 		
 		guild.channels.get(data.channel).getMessage(data.msgid).then(async msg => {
@@ -382,7 +382,7 @@ module.exports = {
 					author: msg.embeds[0].author,
 					footer: msg.embeds[0].footer,
 					fields: msg.embeds[0].fields,
-					image: {url: typeof image == "string" ? image : image.url}
+					image: {url: image}
 				}
 			})
 			
@@ -398,14 +398,14 @@ module.exports = {
 							text: langfile.disableDMsFooter,
 							icon_url: client.user.avatarURL || client.user.defaultAvatarURL
 						},
-						image: {url: typeof image == "string" ? image : image.url}
+						image: {url: image}
 					}
 				})).catch(async e => console.log(`Someone's dm is closed (${e})`))
 			}
 		})
 	},
 	
-	deleteImage: async (guild, sugid, image, client) => {
+	deleteImage: async (guild, sugid, client) => {
 		const db = client.db
 		let language = db.fetch(`dil_${guild.id}`) || "english";
 		let langfile = require(`./languages/english.json`)
