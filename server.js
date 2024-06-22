@@ -1,10 +1,8 @@
 const Eris = require('eris');
-const Constants = Eris.Constants
 const fs = require('fs');
 const settings = require("./settings.json")
 const arkdb = require('ark.db');
 const db = new arkdb.Database()
-const awaitingsuggestions = new Map()
 const version = "1.0-underwork";
 const {manageSuggestion, deleteSuggestion, sendSuggestion, verifySuggestion} = require('./functions')
 
@@ -17,10 +15,6 @@ client.commands = new Eris.Collection(undefined, undefined);
 
 function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function colorToSignedBit(s) {
-	return (parseInt(s.substr(1), 16) << 8) / 256;
 }
 
 client.on('ready', async () => {
@@ -191,7 +185,6 @@ client.on('messageReactionAdd', async (message, emoji, user) => {
 	if (db.fetch(`reviewchannel_${message.guildID}`) != message.channel.id) return;
 	if (!client.users.has(user.id)) client.guilds.get(message.guildID).fetchMembers({userIDs: [ user.id ]})
 	if (client.users.get(user.id).bot) return;
-	const language = db.fetch(`dil_${message.guildID}`) || "english";
 	const guild = client.guilds.get(message.guildID)
 	if (!db.has(`staffrole_${guild.id}`) && !guild.members.get(user.id).permissions.has('manageMessages')) return;
 	if (db.has(`staffrole_${guild.id}`) && !guild.members.get(user.id).roles.some(r => db.fetch(`staffrole_${guild.id}`).includes(r)) && !guild.members.get(user.id).permissions.has('administrator')) return;
