@@ -50,6 +50,13 @@
   "commentMadeNotificationContent": "New comment on followed suggestion in `%guild%`.",
   "commentMadeNotificationExtraContent": "\n**Suggestion number:** %sugid% \n**Suggestion author:** %author% \n**Suggestion:** ```%suggestion%``` \n**Comment number:** %commentid% \n**Comment author:** %commentauthor% \n**Comment:** ```%comment%```",
 
+  "deletedCommentNotificationTitle": "Comment on followed suggestion is deleted!",
+  "deletedCommentNotificationContent": "Comment on followed suggestion in `%guild%` is deleted.",
+
+  "imageAttachedNotificationTitle": "New image attached to followed suggestion!",
+  "imageAttachedNotificationContent": "New image attached to followed suggestion in `%guild%`.",
+  "imageAttachedNotificationExtraContent": "\n**Suggestion number:** %sugid% \n**Suggestion author:** %author% \n**Suggestion:** ```%suggestion%```",
+
   "youWillGetDMs": "Hereafter, you will get a DM when an action taken on your followed suggestions.",
   "youWillNotGetDMs": "Hereafter, you will not get a DM when an action taken on your followed suggestions."
 }

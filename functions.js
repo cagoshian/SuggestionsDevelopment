@@ -1,12 +1,5 @@
-const arkdb = require('ark.db')
-const Eris = require("eris");
-
 function colorToSignedBit(s) {
 	return (parseInt(s.substr(1), 16) << 8) / 256;
-}
-
-function sleep(ms) {
-	return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 function loadComments(guild, sugid, client) {
@@ -97,12 +90,18 @@ module.exports = {
 		
 		const data = db.fetch(`suggestions_${guild.id}.${sugid}`)
 		let commentdata = data.comments
+		let deletedComment
+		for (let comment of commentdata) {
+			if (comment.commentid == commentid) {
+				deletedComment = comment
+				delete commentdata[commentdata.indexOf(comment)]
+				break
+			}
+		}
+		if (!deletedComment) return;
+		data.comments = commentdata
+		db.set(`suggestions_${guild.id}.${sugid}`, data)
 		
-		db.set(`suggestion_${guild.id}_${sugid}.comments`, array)
-		if (!client.users.has(data.author)) client.guilds.get(guild.id).fetchMembers({userIDs: [ data.author ]})
-		if (!client.users.has(commentdata.author)) client.guilds.get(guild.id).fetchMembers({userIDs: [ commentdata.author ]})
-		const author = client.users.get(commentdata.author)
-		const suggestionauthor = client.users.get(data.author)
 		guild.channels.get(data.channel).getMessage(data.msgid).then(async msg => {
 			msg.edit({
 				embed: {
@@ -111,29 +110,21 @@ module.exports = {
 					color: msg.embeds[0].color,
 					author: msg.embeds[0].author,
 					footer: msg.embeds[0].footer,
-					fields: loadComments(guild, sugid, client, language),
+					fields: loadComments(guild, sugid, client),
 					image: msg.embeds[0].image
 				}
 			})
-			if (message != null) message.channel.createMessage({
-				content: language == "english" ? `Successfully deleted the comment!` : `Başarıyla yorum silindi!`,
-				messageReference: {
-					channelID: message.channel.id,
-					messageID: message.id,
-					guildID: message.guildID,
-					failIfNotExists: false
-				}
-			})
+			
 			guild.fetchMembers({userIDs: data.followers})
 			for (const id of data.followers) {
 				if (!client.users.has(id) || !guild.members.has(id)) return;
 				if (!db.has(`denydm_${id}`)) client.users.get(id).getDMChannel().then(async ch => ch.createMessage({
 					embed: {
-						title: 'A comment deleted on a followed suggestion!',
-						description: `A comment deleted on followed suggestion that in \`${guild.name}\`.\n**Suggestion number:** \`#${sugid}\`\n**Suggestion author:** ${suggestionauthor.username}#${suggestionauthor.discriminator}\n**Suggestion:** \`\`\`${db.fetch(`suggestion_${guild.id}_${sugid}.suggestion`)}\`\`\`\n**Deleted comment number:** \`#${commentid}\`\n**Deleted comment author:** ${author.username}#${author.discriminator}\n**Deleted comment:** \`\`\`${commentdata.comment}\`\`\``,
+						title: langfile.deletedCommentNotificationTitle,
+						description: `${langfile.deletedCommentNotificationContent.replace('%guild%', guild.name)} ${langfile.commentMadeNotificationExtraContent.replace('%suggestion%', data.suggestion).replace('%sugid%', sugid).replace('%author%', data.authorUsername).replace('%commentid%', commentid).replace('%commentauthor%', deletedComment.authorUsername).replace('%comment%', deletedComment.comment)}`,
 						color: 6579300,
 						footer: {
-							text: `You can disable these DMs with using .senddm command in a guild.`,
+							text: langfile.disableDMsFooter,
 							icon_url: client.user.avatarURL || client.user.defaultAvatarURL
 						}
 					}
@@ -272,7 +263,7 @@ module.exports = {
 		
 		db.set(`suggestions_${guild.id}.${newSugId}`, sugData)
 		
-		let approvalOrNew = ""
+		let approvalOrNew
 		
 		let reviewchannel = db.fetch(`reviewchannel_${guild.id}`)
 		if (reviewchannel && guild.channels.has(reviewchannel)) {
@@ -371,11 +362,17 @@ module.exports = {
 		})
 	},
 	
-	attachImage: async (message, guild, sugid, image, client, language) => {
+	attachImage: async (guild, sugid, image, client) => {
 		const db = client.db
-		const data = db.fetch(`suggestion_${guild.id}_${sugid}`)
-		if (!client.users.has(data.author)) client.guilds.get(guild.id).fetchMembers({userIDs: [ data.author ]})
-		const author = client.users.get(data.author)
+		let language = db.fetch(`dil_${guild.id}`) || "english";
+		let langfile = require(`./languages/english.json`)
+		if (language && language != "english") langfile = require(`./languages/${language}.json`)
+		
+		const data = db.fetch(`suggestions_${guild.id}.${sugid}`)
+		
+		data.attachment = typeof image == "string" ? image : image.url
+		db.set(`suggestions_${guild.id}.${sugid}`, data)
+		
 		guild.channels.get(data.channel).getMessage(data.msgid).then(async msg => {
 			msg.edit({
 				embed: {
@@ -388,26 +385,17 @@ module.exports = {
 					image: {url: typeof image == "string" ? image : image.url}
 				}
 			})
-			if (message != null) message.channel.createMessage({
-				content: language == "english" ? `Successful!` : `Başarılı!`,
-				messageReference: {
-					channelID: message.channel.id,
-					messageID: message.id,
-					guildID: message.guildID,
-					failIfNotExists: false
-				}
-			})
-			db.set(`suggestion_${guild.id}_${sugid}.attachment`, typeof image == "string" ? image : image.url)
+			
 			guild.fetchMembers({userIDs: data.followers})
 			for (const id of data.followers) {
 				if (!client.users.has(id) || !guild.members.has(id)) return;
 				if (!db.has(`denydm_${id}`)) client.users.get(id).getDMChannel().then(async ch => ch.createMessage({
 					embed: {
-						title: 'An image attached to a followed suggestion!',
-						description: `An image attached to followed suggestion that in \`${guild.name}\`.\n**Suggestion number:** \`#${sugid}\`\n**Suggestion author:** ${author.username}#${author.discriminator}\n**Suggestion:** \`\`\`${db.fetch(`suggestion_${guild.id}_${sugid}.suggestion`)}\`\`\``,
+						title: langfile.imageAttachedNotificationTitle,
+						description: `${langfile.imageAttachedNotificationContent.replace('%guild%', guild.name)} ${langfile.imageAttachedNotificationExtraContent.replace('%sugid%', sugid).replace('%author%', data.authorUsername).replace('%suggestion%', data.suggestion)}`,
 						color: 6579300,
 						footer: {
-							text: `You can disable these DMs with using .senddm command in a guild.`,
+							text: langfile.disableDMsFooter,
 							icon_url: client.user.avatarURL || client.user.defaultAvatarURL
 						},
 						image: {url: typeof image == "string" ? image : image.url}
