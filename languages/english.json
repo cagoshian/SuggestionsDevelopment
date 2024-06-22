@@ -1,0 +1,55 @@
+{
+  "notEnoughPermission": "You need to have %perm% permission to use this command.",
+  "youMustProvide": "You must provide a %thing%.",
+  "alreadyThisSelected": "This %thing% is already selected.",
+  "invalidThing": "Invalid %thing%.",
+  "thingSet": "%thing% set as %selected% successfully!",
+  "allPossibleLanguages": "All possible languages",
+  "language": "language",
+  "adminCommands": "Admin Commands",
+  "administrator": "administrator",
+  "helpCommands": "Help Commands",
+  "noCommandsInCategory": "No commands in this category.",
+  "yourMembersCanUseCommand": "Hereafter, your members can use %thing% command.",
+  "yourMembersCannotUseCommand": "Hereafter, your members cannot use %thing% command.",
+  "youMustAllowMessagingChannel": "You must allow messaging to suggestion channel for sending suggestion with %command% command before this.",
+  "command": "command",
+  "option": "option",
+  "noStaffRoleAndNoPerm": "This server didn't set a staff role and you must have Manage Messages permission to use this!",
+  "staffRoleButNoPerm": "You don't have the sufficient staff role to use this command!",
+  "noSuggestionWithThisNumber": "Can't find a suggestion with this suggestion number in this guild.",
+  "noSuggestionChannel": "This guild doesn't have a suggestion channel.",
+  "reviewFirst": "You must verify or delete this suggestion in review channel before using this command.",
+  "suggestionAlreadyDeleted": "This suggestion was deleted!",
+
+  "approved": "Approved suggestion",
+  "denied": "Denied suggestion",
+  "invalid": "Invalid suggestion",
+  "implemented": "Implemented suggestion",
+  "deleted": "Deleted suggestion",
+  "awaiting": "Awaiting suggestion",
+  "new": "New suggestion",
+  "verified": "verified",
+  "commentWithId": "Comment #%id%",
+
+  "suggestionSentApproval": "Thanks for your submission, your suggestion is sent to the guild staff for approval.",
+
+  "suggestion": "suggestion",
+
+  "notificationClassicContent": "\n**Suggestion number:** %sugid% \n**Suggestion author:** %author% \n**Staff comment:** %staffcomment% \n**Suggestion:** ```%suggestion%```",
+
+  "notificationTitle": "Followed suggestion is marked as %type%!",
+  "notificationContent": "Followed suggestion in `%guild%` is marked as %type%.",
+  "disableDMsFooter": "You can disable these notifications by using /allow-notifications command in a guild.",
+  "suggestionMarkedAs": "Suggestion marked as %type% successfully!",
+
+  "deletedNotificationTitle": "Followed suggestion is deleted!",
+  "deletedNotificationContent": "Followed suggestion in `%guild%` is deleted.",
+
+  "commentMadeNotificationTitle": "New comment on followed suggestion!",
+  "commentMadeNotificationContent": "New comment on followed suggestion in `%guild%`.",
+  "commentMadeNotificationExtraContent": "\n**Suggestion number:** %sugid% \n**Suggestion author:** %author% \n**Suggestion:** ```%suggestion%``` \n**Comment number:** %commentid% \n**Comment author:** %commentauthor% \n**Comment:** ```%comment%```",
+
+  "youWillGetDMs": "Hereafter, you will get a DM when an action taken on your followed suggestions.",
+  "youWillNotGetDMs": "Hereafter, you will not get a DM when an action taken on your followed suggestions."
+}

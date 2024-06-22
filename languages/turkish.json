@@ -1,0 +1,31 @@
+{
+  "notEnoughPermission": "Bu komudu kullanmak için %perm% yetkisine sahip olmalısın.",
+  "youMustProvide": "Bir %thing% belirtmelisin.",
+  "alreadyThisSelected": "Bu %thing% zaten seçili.",
+  "invalidThing": "Geçersiz %thing%.",
+  "thingSet": "%thing% başarıyla %selected% olarak seçildi!",
+  "allPossibleLanguages": "Tüm mümkün diller",
+  "language": "dil",
+  "adminCommands": "Admin Commands",
+  "administrator": "Yönetici",
+  "helpCommands": "Yardım Komutları",
+  "noCommandsInCategory": "No commands in this category.",
+  "yourMembersCanUseCommand": "Hereafter, your members can use %thing% command.",
+  "yourMembersCannotUseCommand": "Hereafter, your members cannot use %thing% command.",
+  "youMustAllowMessagingChannel": "You must allow messaging to suggestion channel for sending suggestion with %command% command before this.",
+  "command": "command",
+  "option": "seçenek",
+  "noStaffRoleAndNoPerm": "This server didn't set a staff role and you must have Manage Messages permission to use this!",
+  "staffRoleButNoPerm": "You don't have the sufficient staff role to use this command!",
+  "noSuggestionWithThisNumber": "Can't find a suggestion with this suggestion number in this guild.",
+  "noSuggestionChannel": "This guild doesn't have a suggestion channel.",
+  "reviewFirst": "You must verify or delete this suggestion in review channel before using this command.",
+  "suggestionAlreadyDeleted": "This suggestion was deleted!",
+
+  "approved": "onaylanmış",
+  "denied": "reddedilmiş",
+  "invalid": "geçersiz",
+  "implemented": "hayata geçirilmiş",
+
+  "suggestion": "öneri"
+}
