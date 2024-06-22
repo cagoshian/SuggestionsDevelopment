@@ -160,7 +160,7 @@ module.exports = {
 							icon_url: msg.embeds[0].author.icon_url
 						},
 						fields: loadComments(guild, sugid, client),
-						image: data.attachment
+						image: {url: data.attachment}
 					}
 			
 			if (!db.has(`${type.toLowerCase()}channel_${guild.id}`) || db.fetch(`${type.toLowerCase()}channel_${guild.id}`) == msg.channel.id || !msg.channel.guild.channels.has(db.fetch(`${type.toLowerCase()}channel_${guild.id}`))) {
@@ -332,7 +332,7 @@ module.exports = {
 					name: `${langfile.new} - ${data.authorUsername}`,
 					icon_url: message.embeds[0].author.icon_url
 				},
-				image: data.attachment
+				image: {url: data.attachment}
 			}
 		}).then(async msg => {
 			if (!db.has(`denyvoting_${guild.id}`)) {

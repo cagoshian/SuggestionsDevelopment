@@ -66,6 +66,9 @@
   "noImageAlready": "This suggestion doesn't have an image attached.",
   "imageDeleted": "Image deleted successfully!",
 
+  "commentLimitExceeded": "You can't add more than 10 comments to a suggestion.",
+  "commentAdded": "Comment added successfully!",
+
   "youWillGetDMs": "Hereafter, you will get a DM when an action taken on your followed suggestions.",
   "youWillNotGetDMs": "Hereafter, you will not get a DM when an action taken on your followed suggestions."
 }
