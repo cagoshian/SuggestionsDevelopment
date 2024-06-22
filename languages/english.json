@@ -57,6 +57,9 @@
   "imageAttachedNotificationContent": "New image attached to followed suggestion in `%guild%`.",
   "imageAttachedNotificationExtraContent": "\n**Suggestion number:** %sugid% \n**Suggestion author:** %author% \n**Suggestion:** ```%suggestion%```",
 
+  "imageDeletedNotificationTitle": "Image deleted from followed suggestion!",
+  "imageDeletedNotificationContent": "Image deleted from followed suggestion in `%guild%`.",
+
   "youWillGetDMs": "Hereafter, you will get a DM when an action taken on your followed suggestions.",
   "youWillNotGetDMs": "Hereafter, you will not get a DM when an action taken on your followed suggestions."
 }

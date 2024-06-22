@@ -403,5 +403,47 @@ module.exports = {
 				})).catch(async e => console.log(`Someone's dm is closed (${e})`))
 			}
 		})
+	},
+	
+	deleteImage: async (guild, sugid, image, client) => {
+		const db = client.db
+		let language = db.fetch(`dil_${guild.id}`) || "english";
+		let langfile = require(`./languages/english.json`)
+		if (language && language != "english") langfile = require(`./languages/${language}.json`)
+		
+		const data = db.fetch(`suggestions_${guild.id}.${sugid}`)
+		
+		data.attachment = null
+		db.set(`suggestions_${guild.id}.${sugid}`, data)
+		
+		guild.channels.get(data.channel).getMessage(data.msgid).then(async msg => {
+			msg.edit({
+				embed: {
+					title: msg.embeds[0].title,
+					description: msg.embeds[0].description,
+					color: msg.embeds[0].color,
+					author: msg.embeds[0].author,
+					footer: msg.embeds[0].footer,
+					fields: msg.embeds[0].fields,
+					image: null
+				}
+			})
+			
+			guild.fetchMembers({userIDs: data.followers})
+			for (const id of data.followers) {
+				if (!client.users.has(id) || !guild.members.has(id)) return;
+				if (!db.has(`denydm_${id}`)) client.users.get(id).getDMChannel().then(async ch => ch.createMessage({
+					embed: {
+						title: langfile.imageDeletedNotificationTitle,
+						description: `${langfile.imageDeletedNotificationContent.replace('%guild%', guild.name)} ${langfile.imageAttachedNotificationExtraContent.replace('%sugid%', sugid).replace('%author%', data.authorUsername).replace('%suggestion%', data.suggestion)}`,
+						color: 6579300,
+						footer: {
+							text: langfile.disableDMsFooter,
+							icon_url: client.user.avatarURL || client.user.defaultAvatarURL
+						}
+					}
+				})).catch(async e => console.log(`Someone's dm is closed (${e})`))
+			}
+		})
 	}
 }
