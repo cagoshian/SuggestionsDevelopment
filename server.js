@@ -205,20 +205,32 @@ client.on('error', async error => console.error(error.stack))
 client.on("interactionCreate", async interaction => {
 	if(interaction instanceof Eris.CommandInteraction) {
 		if (interaction.data.type == 3) {
-			if (interaction.data.name == "Mark Suggestion as Approved") {
-				if (!db.has(`staffrole_${interaction.guildID}`) && !interaction.member.permissions.has('manageMessages')) return interaction.createMessage(`This server didn't set a staff role and you must have MANAGE MESSAGES permission to use this!`)
-				if (db.has(`staffrole_${interaction.guildID}`) && !interaction.member.roles.some(r => db.fetch(`staffrole_${interaction.guildID}`).includes(r)) && !interaction.member.permissions.has('administrator')) return interaction.createMessage(`You don't have staff role to use this command!`)
-				const dil = db.fetch(`dil_${interaction.guildID}`) || "english";
+			let language = db.fetch(`dil_${interaction.guildID}`) || "english";
+			let langfile = require(`./languages/english.json`)
+			if (language && language != "english") langfile = require(`./languages/${language}.json`)
+			
+			if (interaction.data.name.startsWith("Mark Suggestion as")) {
+				const status = interaction.data.name.split("Mark Suggestion as ")[1].toLowerCase()
+				if (!db.has(`staffrole_${interaction.guildID}`) && !interaction.member.permissions.has('manageMessages')) return interaction.createMessage(langfile.noStaffRoleAndNoPerm)
+				if (db.has(`staffrole_${interaction.guildID}`) && !interaction.member.roles.some(r => db.fetch(`staffrole_${interaction.guildID}`).includes(r)) && !interaction.member.permissions.has('administrator')) return interaction.createMessage(langfile.staffRoleButNoPerm)
 				const interactedMessage = await interaction.channel.getMessage(interaction.data.target_id)
-				const sugid = Number(interactedMessage.embeds[0].title.split('#')[1].trim())
-				const sugname = `suggestion_${interaction.guildID}_${sugid}`
-				if (!db.has(sugname)) return interaction.createMessage(`This suggestion doesn't exist in this server.`)
-				if (!client.guilds.get(interaction.guildID).channels.get(db.fetch(`suggestionchannel_${interaction.guildID}`))) return interaction.createMessage(`This guild's suggestion channel has been deleted, so you can't handle suggestions in this guild until setting a new suggestion channel.`)
-				if (db.fetch(`suggestion_${interaction.guildID}_${sugid}.status`) == "awaiting approval") return interaction.createMessage(`You must verify or delete this suggestion in review channel using emojis before using this command.`)
-				if (db.fetch(`suggestion_${interaction.guildID}_${sugid}.status`) == "deleted") return interaction.createMessage(`This suggestion was deleted!`)
-				if (db.fetch(`${sugname}.status`) == 'approved') return interaction.createMessage(`This suggestion is already approved.`)
-				manageSuggestion(interactedMessage, client.guilds.get(interaction.guildID), sugid, 'Approved', client, dil, [])
-				interaction.createMessage({content: `Approved successfully!`, flags: 64})
+				if (!interactedMessage.author.bot) return;
+				const data = Object.values(db.fetch(`suggestions_${interaction.guildID}`)).find(s => s.msgid == interactedMessage.id)
+				if (!data) return interaction.createMessage(langfile.noSuggestionWithThisNumber)
+				if (data.status == "awaiting") return interaction.createMessage(langfile.reviewFirst)
+				if (data.status == "deleted") return interaction.createMessage(langfile.suggestionAlreadyDeleted)
+				if (data.status == status) return interaction.createMessage(langfile.thisSuggestionIsAlreadyMarkedAs.replace('%type%', langfile[status]))
+				await manageSuggestion(interaction.member.user, client.guilds.get(interaction.guildID), data.sugid, status, client, "-")
+				interaction.createMessage(langfile.suggestionMarkedAs.replace('%type%', langfile[status]))
+			} else if (interaction.data.name == "Follow Suggestion") {
+				const interactedMessage = await interaction.channel.getMessage(interaction.data.target_id)
+				if (!interactedMessage.author.bot) return;
+				const data = Object.values(db.fetch(`suggestions_${interaction.guildID}`)).find(s => s.msgid == interactedMessage.id)
+				if (!data) return interaction.createMessage(langfile.noSuggestionWithThisNumber)
+				if (data.status == "deleted") return interaction.createMessage(langfile.suggestionAlreadyDeleted)
+				data.followers.push(interaction.member.user.id)
+				db.set(`suggestions_${interaction.guildID}.${data.sugid}`, data)
+				interaction.createMessage(langfile.suggestionFollowed)
 			}
 		} else {
 			if (client.commands.has(interaction.data.name)) {

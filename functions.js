@@ -13,6 +13,7 @@ function loadComments(guild, sugid, client) {
 	let commentData = data.comments
 	commentData.sort((a, b) => a.commentid - b.commentid)
 	for (const i of commentData) {
+		console.log(i)
 		fields.push({
 			name: `${langfile.commentWithId.replace('%id%', i.commentid)} - ${i.authorUsername} <t:${i.timestamp}:R>`,
 			value: i.comment
@@ -94,7 +95,7 @@ module.exports = {
 		for (let comment of commentdata) {
 			if (comment.commentid == commentid) {
 				deletedComment = comment
-				delete commentdata[commentdata.indexOf(comment)]
+				commentdata.splice(commentdata.indexOf(comment), 1)
 				break
 			}
 		}
@@ -141,6 +142,9 @@ module.exports = {
 		
 		const data = db.fetch(`suggestions_${guild.id}.${sugid}`)
 		if (!data) return;
+		
+		let possibleTypes = ["approved", "denied", "invalid", "implemented"]
+		if (!possibleTypes.includes(type)) return;
 		
 		let color = colorToSignedBit("#00FF00")
 		if (type == "approved") color = colorToSignedBit("#00FF00")

@@ -20,7 +20,7 @@ module.exports.run = async (client, interaction) => {
 	if (data.status == "awaiting") return interaction.createMessage(langfile.reviewFirst)
 	if (data.status == "deleted") return interaction.createMessage(langfile.suggestionAlreadyDeleted)
 	
-	if (!data.comments.some(cmt => cmt.id == commentid)) return interaction.createMessage(langfile.noCommentWithThisId)
+	if (!data.comments.some(cmt => cmt.commentid == commentid)) return interaction.createMessage(langfile.noCommentWithThisId)
 	await deleteComment(client.guilds.get(interaction.guildID), sugid, commentid, client)
 	interaction.createMessage(langfile.commentDeleted)
 }
