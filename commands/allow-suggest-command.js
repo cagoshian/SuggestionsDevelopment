@@ -6,15 +6,13 @@ module.exports.run = async (client, interaction) => {
 	let langfile = require(`../languages/english.json`)
 	if (dil && dil != "english") langfile = require(`../languages/${dil}.json`)
 	
-	if (!interaction.member.permissions.has('administrator')) return interaction.createMessage(langfile.notEnoughPermission.replace('%perm%', 'Administrator'))
-	
 	const allow = interaction.data.options[0].value
 	const allowedCurrently = !db.has(`denysuggestcommand_${interaction.guildID}`)
 	
 	if (allow === allowedCurrently) return interaction.createMessage({content: langfile.alreadyThisSelected.replace('%thing%', langfile.option), flags: 64})
 	
 	if (allow === false) {
-		if (db.has(`disablemessagechannel_${interaction.guildID}`)) return interaction.createMessage(langfile.youMustAllowMessagingChannel.replace('%command', `\`${prefix}messagingsuggestionchannel\``))
+		if (db.has(`disablemessagechannel_${interaction.guildID}`)) return interaction.createMessage({content: langfile.youMustAllowMessagingChannel.replace('%command', `\`/allow-messaging-suggestion-channel\``), flags: 64})
 		db.set(`denysuggestcommand_${interaction.guildID}`, 'true')
 		interaction.createMessage(langfile.yourMembersCannotUseCommand.replace('%thing%', `suggest`))
 	} else {

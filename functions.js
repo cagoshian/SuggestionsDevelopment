@@ -13,7 +13,6 @@ function loadComments(guild, sugid, client) {
 	let commentData = data.comments
 	commentData.sort((a, b) => a.commentid - b.commentid)
 	for (const i of commentData) {
-		console.log(i)
 		fields.push({
 			name: `${langfile.commentWithId.replace('%id%', i.commentid)} - ${i.authorUsername} <t:${i.timestamp}:R>`,
 			value: i.comment
@@ -81,6 +80,15 @@ async function addComment(guild, sugid, comment, commenter, client, reloadMessag
 }
 
 module.exports = {
+	staffPermCheck: (member, client) => {
+		const db = client.db
+		let noperm = false
+		
+		if (!db.has(`staffrole_${member.guild.id}`) && !member.permissions.has('manageMessages')) noperm = true
+		if (db.has(`staffrole_${member.guild.id}`) && !member.roles.some(r => db.fetch(`staffrole_${member.guild.id}`).includes(r)) && !member.permissions.has('administrator')) noperm = true
+		return noperm
+	},
+	
 	addComment: addComment,
 	
 	deleteComment: async (guild, sugid, commentid, client) => {

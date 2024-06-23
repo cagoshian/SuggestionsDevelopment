@@ -1,5 +1,5 @@
 {
-  "notEnoughPermission": "You need to have %perm% permission to use this command.",
+  "adminNotEnoughPerm": "You need to have Administrator permission to use this command.",
   "youMustProvide": "You must provide a %thing%.",
   "alreadyThisSelected": "This %thing% is already selected.",
   "invalidThing": "Invalid %thing%.",
@@ -15,8 +15,7 @@
   "youMustAllowMessagingChannel": "You must allow messaging to suggestion channel for sending suggestion with %command% command before this.",
   "command": "command",
   "option": "option",
-  "noStaffRoleAndNoPerm": "This server didn't set a staff role and you must have Manage Messages permission to use this!",
-  "staffRoleButNoPerm": "You don't have the sufficient staff role to use this command!",
+  "staffNotEnoughPerm": "You don't have the sufficient permission to use this command! (staff role, Manage Messages permission if no staff role)",
   "noSuggestionWithThisNumber": "Can't find a suggestion with this suggestion number in this guild.",
   "noSuggestionChannel": "This guild doesn't have a suggestion channel.",
   "reviewFirst": "You must verify or delete this suggestion in review channel before using this command.",

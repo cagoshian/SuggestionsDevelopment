@@ -6,8 +6,6 @@ module.exports.run = async (client, interaction) => {
 	let langfile = require(`../languages/english.json`)
 	if (dil && dil != "english") langfile = require(`../languages/${dil}.json`)
 	
-	if (!interaction.member.permissions.has('administrator')) return interaction.createMessage({content: langfile.notEnoughPermission.replace('%perm%', 'Administrator'), flags: 64})
-	
 	const selectedLanguage = interaction.data.options[0].value
 	if (!client.languages.includes(selectedLanguage)) return interaction.createMessage({content: `${langfile.invalidThing.replace("%thing%", langfile.language)} ${langfile.allPossibleLanguages}: \`${client.languages.join('` `')}\``, flags: 64})
 	if (selectedLanguage == dil) return interaction.createMessage({content: langfile.alreadyThisSelected.replace("%thing%", langfile.language), flags: 64})

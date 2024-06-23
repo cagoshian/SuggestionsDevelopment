@@ -1,5 +1,5 @@
 const Eris = require("eris");
-const { addComment }  = require('../functions')
+const { addComment, staffPermCheck}  = require('../functions')
 
 module.exports.run = async (client, interaction) => {
 	const db = client.db
@@ -7,10 +7,10 @@ module.exports.run = async (client, interaction) => {
 	let langfile = require(`../languages/english.json`)
 	if (dil && dil != "english") langfile = require(`../languages/${dil}.json`)
 	
-	if (!db.has(`suggestionchannel_${interaction.guildID}`) || !client.guilds.get(interaction.guildID).channels.get(db.fetch(`suggestionchannel_${interaction.guildID}`))) return interaction.createMessage(langfile.noSuggestionChannel)
+	if (!db.has(`suggestionchannel_${interaction.guildID}`) || !client.guilds.get(interaction.guildID).channels.get(db.fetch(`suggestionchannel_${interaction.guildID}`))) return interaction.createMessage({content: langfile.noSuggestionChannel, flags: 64})
 	if (db.has(`denyeveryonecomment_${interaction.guildID}`)) {
-		if (!db.has(`staffrole_${interaction.guildID}`) && !interaction.member.permissions.has('manageMessages')) return interaction.createMessage(langfile.noStaffRoleAndNoPerm)
-		if (db.has(`staffrole_${interaction.guildID}`) && !interaction.member.roles.some(r => db.fetch(`staffrole_${interaction.guildID}`).includes(r)) && !interaction.member.permissions.has('administrator')) return interaction.createMessage(langfile.staffRoleButNoPerm)
+		const noPerm = staffPermCheck(interaction.member, client)
+		if (noPerm === true) return interaction.createMessage({content: langfile.staffNotEnoughPerm, flags: 64})
 	}
 	
 	const sugid = interaction.data.options[0].value
@@ -18,11 +18,11 @@ module.exports.run = async (client, interaction) => {
 	
 	const data = db.fetch(`suggestions_${interaction.guildID}.${sugid}`)
 	
-	if (!data) return interaction.createMessage(langfile.noSuggestionWithThisNumber)
-	if (data.status == "awaiting") return interaction.createMessage(langfile.reviewFirst)
-	if (data.status == "deleted") return interaction.createMessage(langfile.suggestionAlreadyDeleted)
+	if (!data) return interaction.createMessage({content: langfile.noSuggestionWithThisNumber, flags: 64})
+	if (data.status == "awaiting") return interaction.createMessage({content: langfile.reviewFirst, flags: 64})
+	if (data.status == "deleted") return interaction.createMessage({content: langfile.suggestionAlreadyDeleted, flags: 64})
 	
-	if (data.comments.length >= 10) return interaction.createMessage(langfile.commentLimitExceeded)
+	if (data.comments.length >= 10) return interaction.createMessage({content: langfile.commentLimitExceeded, flags: 64})
 	await addComment(client.guilds.get(interaction.guildID), sugid, comment, interaction.member.user.id, client, true)
 	interaction.createMessage(langfile.commentAdded)
 }

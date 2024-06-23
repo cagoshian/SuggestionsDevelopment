@@ -4,7 +4,7 @@ const settings = require("./settings.json")
 const arkdb = require('ark.db');
 const db = new arkdb.Database()
 const version = "1.0-underwork";
-const {manageSuggestion, deleteSuggestion, sendSuggestion, verifySuggestion} = require('./functions')
+const {manageSuggestion, deleteSuggestion, sendSuggestion, verifySuggestion, staffPermCheck} = require('./functions')
 
 const type3cmds = ["Mark Suggestion as Approved", "Mark Suggestion as Denied", "Mark Suggestion as Invalid", "Mark Suggestion as Implemented", "Follow Suggestion"]
 
@@ -87,36 +87,21 @@ client.on('ready', async () => {
 
 client.on("messageCreate", async message => {
 	if (message.author.bot) return;
-	if (!message.guildID) return message.channel.createMessage(`You can't use commands via DMs, you can only receive suggestion updates.`)
-	const prefix = db.fetch(`prefix_${message.guildID}`) || ".";
-	if (message.content.startsWith(prefix)) {
-		const messageArray = message.content.trim().split(" ").filter(item => item)
-		const cmd = messageArray[0];
-		let commandfile = client.commands.get(cmd.slice(prefix.length));
-		if (!commandfile) return;
-		const args = messageArray.slice(1);
-		const guild = client.guilds.get(message.guildID)
-		guild.fetchMembers({userIDs: [client.user.id]})
-		const guildme = guild.members.get(client.user.id)
-		if (!guildme.permissions.has('sendMessages')) return message.author.getDMChannel().then(ch => ch.createMessage(`The bot doesn't have send messages permission in this guild.`))
-		if (!guildme.permissions.has('manageMessages') || !guildme.permissions.has('embedLinks') || !guildme.permissions.has('addReactions')) return message.channel.createMessage(`The bot should have Manage Messages, Embed Links and Add Reactions permissions in order to work properly.`)
-		commandfile.run(client, message, args);
-	} else {
-		if (!db.has(`suggestionchannel_${message.guildID}`)) return;
-		if (db.fetch(`suggestionchannel_${message.guildID}`) != message.channel.id) return;
-		if (db.has(`disablemessagechannel_${message.guildID}`)) return;
-		
-		let language = db.fetch(`dil_${message.guildID}`) || "english";
-		let langfile = require(`./languages/english.json`)
-		if (language && language != "english") langfile = require(`./languages/${language}.json`)
-		
-		const approvalOrNew = await sendSuggestion(message.author, message.content.slice(0, 1024), client.guilds.get(message.guildID), client)
-		message.delete()
-		if (approvalOrNew == "approval") return message.channel.createMessage(langfile.suggestionSentApproval).then(async msg => {
-			await sleep(7500)
-			msg.delete()
-		})
-	}
+	
+	if (!db.has(`suggestionchannel_${message.guildID}`)) return;
+	if (db.fetch(`suggestionchannel_${message.guildID}`) != message.channel.id) return;
+	if (db.has(`disablemessagechannel_${message.guildID}`)) return;
+	
+	let language = db.fetch(`dil_${message.guildID}`) || "english";
+	let langfile = require(`./languages/english.json`)
+	if (language && language != "english") langfile = require(`./languages/${language}.json`)
+	
+	const approvalOrNew = await sendSuggestion(message.author, message.content.slice(0, 1024), client.guilds.get(message.guildID), client)
+	message.delete()
+	if (approvalOrNew == "approval") return message.channel.createMessage(langfile.suggestionSentApproval).then(async msg => {
+		await sleep(7500)
+		msg.delete()
+	})
 })
 
 /*client.on('guildCreate', async guild => {
@@ -186,8 +171,8 @@ client.on('messageReactionAdd', async (message, emoji, user) => {
 	if (!client.users.has(user.id)) client.guilds.get(message.guildID).fetchMembers({userIDs: [ user.id ]})
 	if (client.users.get(user.id).bot) return;
 	const guild = client.guilds.get(message.guildID)
-	if (!db.has(`staffrole_${guild.id}`) && !guild.members.get(user.id).permissions.has('manageMessages')) return;
-	if (db.has(`staffrole_${guild.id}`) && !guild.members.get(user.id).roles.some(r => db.fetch(`staffrole_${guild.id}`).includes(r)) && !guild.members.get(user.id).permissions.has('administrator')) return;
+	const noperm = staffPermCheck(user, client)
+	if (noperm === true) return;
 	guild.channels.get(message.channel.id).getMessage(message.id).then(async msg => {
 		if (emoji.name == `✅`) return verifySuggestion(msg, msg.channel.guild, client)
 		if (emoji.name == `❌`) return deleteSuggestion(client.guilds.get(msg.guildID), Number(msg.embeds[0].title.split(' ').find(s => s.includes("#")).replace('#', '')), client, "-")
@@ -204,15 +189,17 @@ client.on('error', async error => console.error(error.stack))
 
 client.on("interactionCreate", async interaction => {
 	if(interaction instanceof Eris.CommandInteraction) {
+		let language = db.fetch(`dil_${interaction.guildID}`) || "english";
+		let langfile = require(`./languages/english.json`)
+		if (language && language != "english") langfile = require(`./languages/${language}.json`)
+		
 		if (interaction.data.type == 3) {
-			let language = db.fetch(`dil_${interaction.guildID}`) || "english";
-			let langfile = require(`./languages/english.json`)
-			if (language && language != "english") langfile = require(`./languages/${language}.json`)
-			
 			if (interaction.data.name.startsWith("Mark Suggestion as")) {
 				const status = interaction.data.name.split("Mark Suggestion as ")[1].toLowerCase()
-				if (!db.has(`staffrole_${interaction.guildID}`) && !interaction.member.permissions.has('manageMessages')) return interaction.createMessage(langfile.noStaffRoleAndNoPerm)
-				if (db.has(`staffrole_${interaction.guildID}`) && !interaction.member.roles.some(r => db.fetch(`staffrole_${interaction.guildID}`).includes(r)) && !interaction.member.permissions.has('administrator')) return interaction.createMessage(langfile.staffRoleButNoPerm)
+				
+				const noperm = staffPermCheck(interaction.member, client)
+				if (noperm === true) return interaction.createMessage({content: langfile.staffNotEnoughPerm, flags: 64})
+				
 				const interactedMessage = await interaction.channel.getMessage(interaction.data.target_id)
 				if (!interactedMessage.author.bot) return;
 				const data = Object.values(db.fetch(`suggestions_${interaction.guildID}`)).find(s => s.msgid == interactedMessage.id)
@@ -235,7 +222,13 @@ client.on("interactionCreate", async interaction => {
 		} else {
 			if (client.commands.has(interaction.data.name)) {
 				const command = client.commands.get(interaction.data.name)
-				command.run(client, interaction)
+				if (command.help.category == "admin") {
+					if (!interaction.member.permissions.has('administrator')) return interaction.createMessage({content: langfile.adminNotEnoughPerm, flags: 64})
+				} else if (command.help.category == "staff") {
+					const noperm = staffPermCheck(interaction.member, client)
+					if (noperm === true) return interaction.createMessage({content: langfile.staffNotEnoughPerm, flags: 64})
+				}
+				command.run(client, interaction, langfile)
 			}
 		}
 	}
