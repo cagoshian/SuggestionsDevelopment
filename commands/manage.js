@@ -7,17 +7,16 @@ module.exports.run = async (client, interaction) => {
 	let langfile = require(`../languages/english.json`)
 	if (dil && dil != "english") langfile = require(`../languages/${dil}.json`)
 	
-	if (!db.has(`suggestionchannel_${interaction.guildID}`) || !client.guilds.get(interaction.guildID).channels.get(db.fetch(`suggestionchannel_${interaction.guildID}`))) return interaction.createMessage(langfile.noSuggestionChannel)
-	
 	const sugid = interaction.data.options[0].value
 	const managingType = interaction.data.options[1].value
 	const comment = interaction.data.options[2] ? interaction.data.options[2].value : "-"
 	
 	const data = db.fetch(`suggestions_${interaction.guildID}.${sugid}`)
 	
-	if (!data) return interaction.createMessage(langfile.noSuggestionWithThisNumber)
-	if (data.status == "awaiting") return interaction.createMessage(langfile.reviewFirst)
-	if (data.status == "deleted") return interaction.createMessage(langfile.suggestionAlreadyDeleted)
+	if (!data) return interaction.createMessage({content: langfile.noSuggestionWithThisNumber, flags: 64})
+	if (data.status == "awaiting") return interaction.createMessage({content: langfile.reviewFirst, flags: 64})
+	if (data.status == "deleted") return interaction.createMessage({content: langfile.suggestionAlreadyDeleted, flags: 64})
+	
 	if (managingType != "deleted") await manageSuggestion(interaction.member.user, client.guilds.get(interaction.guildID), sugid, managingType, client, comment)
 	else await deleteSuggestion(client.guilds.get(interaction.guildID), sugid, client, comment)
 	interaction.createMessage(langfile.suggestionMarkedAs.replace('%type%', langfile[managingType]))

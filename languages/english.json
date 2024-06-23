@@ -74,6 +74,7 @@
   "thisSuggestionIsAlreadyMarkedAs": "This suggestion is already marked as %type%.",
 
   "suggestionFollowed": "You are now following this suggestion.",
+  "suggestionUnfollowed": "You unfollowed this suggestion.",
 
   "youWillGetDMs": "Hereafter, you will get a DM when an action taken on your followed suggestions.",
   "youWillNotGetDMs": "Hereafter, you will not get a DM when an action taken on your followed suggestions."

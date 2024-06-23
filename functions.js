@@ -48,6 +48,7 @@ async function addComment(guild, sugid, comment, commenter, client, reloadMessag
 	db.set(`suggestions_${guild.id}.${sugid}`, data)
 	
 	if (reloadMessage !== false) {
+		if (!guild.channels.has(data.channel)) return;
 		guild.channels.get(data.channel).getMessage(data.msgid).then(async msg => {
 			msg.edit({
 				embed: {
@@ -111,6 +112,7 @@ module.exports = {
 		data.comments = commentdata
 		db.set(`suggestions_${guild.id}.${sugid}`, data)
 		
+		if (!guild.channels.has(data.channel)) return;
 		guild.channels.get(data.channel).getMessage(data.msgid).then(async msg => {
 			msg.edit({
 				embed: {
@@ -160,6 +162,7 @@ module.exports = {
 		if (type == "invalid") color = colorToSignedBit("#000000")
 		if (type == "implemented") color = 13631487
 		
+		if (!guild.channels.has(data.channel)) return;
 		guild.channels.get(data.channel).getMessage(data.msgid).then(msg => {
 			if (comment != "-") addComment(guild, sugid, comment, interactor.id, client, false)
 			
@@ -221,6 +224,7 @@ module.exports = {
 		if (!data) return;
 		
 		if (onMsgDelete !== true) {
+			if (!guild.channels.has(data.channel)) return;
 			guild.channels.get(data.channel).getMessage(data.msgid).then(msg => {
 				if (msg) msg.delete()
 			})
@@ -301,6 +305,7 @@ module.exports = {
 		} else {
 			approvalOrNew = "new"
 			let suggestionchannel = db.fetch(`suggestionchannel_${guild.id}`)
+			if (!guild.channels.has(suggestionchannel)) return;
 			guild.channels.get(suggestionchannel).createMessage({
 				embed: {
 					title: `${langfile.suggestion.charAt(0).toUpperCase() + langfile.suggestion.slice(1)} #${newSugId}`,
@@ -335,7 +340,9 @@ module.exports = {
 		let data = Object.values(oldSuggestions).find(s => s.msgid == message.id)
 		let approveemoji = `👍`
 		let denyemoji = `👎`
-		guild.channels.get(db.fetch(`suggestionchannel_${guild.id}`)).createMessage({
+		let suggestionchannel = db.fetch(`suggestionchannel_${guild.id}`)
+		if (!guild.channels.has(suggestionchannel)) return;
+		guild.channels.get(suggestionchannel).createMessage({
 			embed: {
 				title: `${langfile.suggestion.charAt(0).toUpperCase() + langfile.suggestion.slice(1)} #${data.sugid}`,
 				description: data.suggestion,
@@ -385,6 +392,7 @@ module.exports = {
 		data.attachment = image
 		db.set(`suggestions_${guild.id}.${sugid}`, data)
 		
+		if (!guild.channels.has(data.channel)) return;
 		guild.channels.get(data.channel).getMessage(data.msgid).then(async msg => {
 			msg.edit({
 				embed: {
@@ -428,6 +436,7 @@ module.exports = {
 		data.attachment = null
 		db.set(`suggestions_${guild.id}.${sugid}`, data)
 		
+		if (!guild.channels.has(data.channel)) return;
 		guild.channels.get(data.channel).getMessage(data.msgid).then(async msg => {
 			msg.edit({
 				embed: {

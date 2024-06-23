@@ -7,7 +7,6 @@ module.exports.run = async (client, interaction) => {
 	let langfile = require(`../languages/english.json`)
 	if (dil && dil != "english") langfile = require(`../languages/${dil}.json`)
 	
-	if (!db.has(`suggestionchannel_${interaction.guildID}`) || !client.guilds.get(interaction.guildID).channels.get(db.fetch(`suggestionchannel_${interaction.guildID}`))) return interaction.createMessage({content: langfile.noSuggestionChannel, flags: 64})
 	if (db.has(`denyeveryonecomment_${interaction.guildID}`)) {
 		const noPerm = staffPermCheck(interaction.member, client)
 		if (noPerm === true) return interaction.createMessage({content: langfile.staffNotEnoughPerm, flags: 64})
@@ -19,7 +18,6 @@ module.exports.run = async (client, interaction) => {
 	const data = db.fetch(`suggestions_${interaction.guildID}.${sugid}`)
 	
 	if (!data) return interaction.createMessage({content: langfile.noSuggestionWithThisNumber, flags: 64})
-	if (data.status == "awaiting") return interaction.createMessage({content: langfile.reviewFirst, flags: 64})
 	if (data.status == "deleted") return interaction.createMessage({content: langfile.suggestionAlreadyDeleted, flags: 64})
 	
 	if (data.comments.length >= 10) return interaction.createMessage({content: langfile.commentLimitExceeded, flags: 64})
