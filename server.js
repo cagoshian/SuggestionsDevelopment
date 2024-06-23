@@ -180,6 +180,7 @@ client.on('messageReactionAdd', async (message, emoji, user) => {
 })
 
 client.on('messageDelete', async message => {
+	await sleep(1000)
 	const data = Object.values(db.fetch(`suggestions_${message.guildID}`)).find(s => s.msgid == message.id)
 	if (!data) return;
 	deleteSuggestion(client.guilds.get(message.guildID), data.sugid, client, "-", true)
