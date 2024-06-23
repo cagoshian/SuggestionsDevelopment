@@ -69,6 +69,9 @@
   "commentLimitExceeded": "You can't add more than 10 comments to a suggestion.",
   "commentAdded": "Comment added successfully!",
 
+  "noCommentWithThisId": "Can't find a comment with this comment ID in this suggestion.",
+  "commentDeleted": "Comment deleted successfully!",
+
   "youWillGetDMs": "Hereafter, you will get a DM when an action taken on your followed suggestions.",
   "youWillNotGetDMs": "Hereafter, you will not get a DM when an action taken on your followed suggestions."
 }
