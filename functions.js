@@ -14,7 +14,7 @@ function loadComments(guild, sugid, client) {
 	commentData.sort((a, b) => a.commentid - b.commentid)
 	for (const i of commentData) {
 		fields.push({
-			name: `${langfile.commentWithId.replace('%id%', i.commentid)} - ${i.authorUsername} <t:${i.timestamp}:R>`,
+			name: `${langfile.commentWithId.replace('%id%', i.commentid)} - ${i.authorUsername} <t:${i.timestamp.toString().substring(0, i.timestamp.toString().length - 3)}:R>`,
 			value: i.comment
 		})
 	}
