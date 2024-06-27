@@ -1,5 +1,5 @@
 function colorToSignedBit(s) {
-	return (parseInt(s.substr(1), 16) << 8) / 256;
+    return (parseInt(s.slice(1), 16) << 8) / 256;
 }
 
 function loadComments(guild, sugid, client) {
