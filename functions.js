@@ -1,5 +1,7 @@
+const Eris = require("eris");
+
 function colorToSignedBit(s) {
-    return (parseInt(s.slice(1), 16) << 8) / 256;
+	return (parseInt(s.slice(1), 16) << 8) / 256;
 }
 
 function loadComments(guild, sugid, client) {
@@ -30,7 +32,7 @@ async function addComment(guild, sugid, comment, commenter, client, reloadMessag
 	const data = db.fetch(`suggestions_${guild.id}.${sugid}`)
 	if (data.comments.length >= 10) return;
 	
-	if (!client.users.has(commenter)) client.guilds.get(guild.id).fetchMembers({userIDs: [ commenter ]})
+	if (!client.users.has(commenter)) client.guilds.get(guild.id).fetchMembers({userIDs: [commenter]})
 	const author = client.users.get(commenter)
 	
 	let commentid = 1
@@ -156,10 +158,10 @@ module.exports = {
 		let possibleTypes = ["approved", "denied", "invalid", "implemented"]
 		if (!possibleTypes.includes(type)) return;
 		
-		let color = colorToSignedBit("#00FF00")
-		if (type == "approved") color = colorToSignedBit("#00FF00")
+		let color = colorToSignedBit("#0F0")
+		if (type == "approved") color = colorToSignedBit("#0F0")
 		if (type == "denied") color = 16711680
-		if (type == "invalid") color = colorToSignedBit("#000000")
+		if (type == "invalid") color = colorToSignedBit("#000")
 		if (type == "implemented") color = 13631487
 		
 		if (!guild.channels.has(data.channel)) return;
@@ -167,16 +169,16 @@ module.exports = {
 			if (comment != "-") addComment(guild, sugid, comment, interactor.id, client, false)
 			
 			const embedObject = {
-						title: `${langfile.suggestion.charAt(0).toUpperCase() + langfile.suggestion.slice(1)} #${sugid}`,
-						description: data.suggestion,
-						color,
-						author: {
-							name: `${langfile[type]} - ${data.authorUsername}`,
-							icon_url: msg.embeds[0].author.icon_url
-						},
-						fields: loadComments(guild, sugid, client),
-						image: {url: data.attachment}
-					}
+				title: `${langfile.suggestion.charAt(0).toUpperCase() + langfile.suggestion.slice(1)} #${sugid}`,
+				description: data.suggestion,
+				color,
+				author: {
+					name: `${langfile[type]} - ${data.authorUsername}`,
+					icon_url: msg.embeds[0].author.icon_url
+				},
+				fields: loadComments(guild, sugid, client),
+				image: {url: data.attachment}
+			}
 			
 			if (!db.has(`${type.toLowerCase()}channel_${guild.id}`) || db.fetch(`${type.toLowerCase()}channel_${guild.id}`) == msg.channel.id || !msg.channel.guild.channels.has(db.fetch(`${type.toLowerCase()}channel_${guild.id}`))) {
 				msg.edit({
@@ -242,7 +244,7 @@ module.exports = {
 				embed: {
 					title: langfile.deletedNotificationTitle,
 					description: `${langfile.deletedNotificationContent.replace('%guild%', guild.name)} ${langfile.notificationClassicContent.replace('%suggestion%', data.suggestion).replace('%sugid%', sugid).replace('%author%', data.authorUsername).replace('%staffcomment%', comment)}`,
-					color: colorToSignedBit("#000000"),
+					color: colorToSignedBit("#000"),
 					footer: {
 						text: langfile.disableDMsFooter,
 						icon_url: client.user.avatarURL || client.user.defaultAvatarURL
@@ -258,7 +260,7 @@ module.exports = {
 		let langfile = require(`./languages/english.json`)
 		if (language && language != "english") langfile = require(`./languages/${language}.json`)
 		
-		if (!client.users.has(sender.id)) client.guilds.get(guild.id).fetchMembers({userIDs: [ sender.id ]})
+		if (!client.users.has(sender.id)) client.guilds.get(guild.id).fetchMembers({userIDs: [sender.id]})
 		if (!db.has(`suggestions_${guild.id}`)) db.set(`suggestions_${guild.id}`, {})
 		let newSugId = Object.keys(db.fetch(`suggestions_${guild.id}`)).length + 1
 		
@@ -272,7 +274,7 @@ module.exports = {
 			timestamp: Date.now(),
 			channel: "1",
 			guild: guild.id,
-			followers: [ sender.id ],
+			followers: [sender.id],
 			attachment: null,
 			comments: []
 		}
@@ -293,14 +295,31 @@ module.exports = {
 						name: `${langfile.awaiting} - ${sender.username}`,
 						icon_url: sender.avatarURL || sender.defaultAvatarURL
 					}
-				}
+				},
+				components: [
+					{
+						type: Eris.Constants.ComponentTypes.ACTION_ROW,
+						components: [
+							{
+								type: Eris.Constants.ComponentTypes.BUTTON,
+								style: Eris.Constants.ButtonStyles.SUCCESS,
+								custom_id: "verify_suggestion",
+								label: "Verify"
+							},
+							{
+								type: Eris.Constants.ComponentTypes.BUTTON,
+								style: Eris.Constants.ButtonStyles.DANGER,
+								custom_id: "delete_suggestion",
+								label: "Delete"
+							}
+						]
+					}
+				]
 			}).then(async msg => {
 				sugData.status = "awaiting"
 				sugData.msgid = msg.id
 				sugData.channel = reviewchannel
 				db.set(`suggestions_${guild.id}.${newSugId}`, sugData)
-				msg.addReaction(`✅`)
-				msg.addReaction(`❌`)
 			})
 		} else {
 			approvalOrNew = "new"
@@ -346,7 +365,7 @@ module.exports = {
 			embed: {
 				title: `${langfile.suggestion.charAt(0).toUpperCase() + langfile.suggestion.slice(1)} #${data.sugid}`,
 				description: data.suggestion,
-				color: colorToSignedBit("#00FFFF"),
+				color: colorToSignedBit("#0FF"),
 				author: {
 					name: `${langfile.new} - ${data.authorUsername}`,
 					icon_url: message.embeds[0].author.icon_url

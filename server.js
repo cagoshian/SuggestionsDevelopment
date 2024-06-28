@@ -160,20 +160,6 @@ client.on('guildCreate', async guild => {
 	})
 })
 
-client.on('messageReactionAdd', async (message, emoji, user) => {
-	if (!db.has(`reviewchannel_${message.guildID}`)) return;
-	if (db.fetch(`reviewchannel_${message.guildID}`) != message.channel.id) return;
-	if (!client.users.has(user.id)) client.guilds.get(message.guildID).fetchMembers({userIDs: [ user.id ]})
-	if (client.users.get(user.id).bot) return;
-	const guild = client.guilds.get(message.guildID)
-	const noperm = staffPermCheck(user, client)
-	if (noperm === true) return;
-	guild.channels.get(message.channel.id).getMessage(message.id).then(async msg => {
-		if (emoji.name == `✅`) return verifySuggestion(msg, msg.channel.guild, client)
-		if (emoji.name == `❌`) return deleteSuggestion(client.guilds.get(msg.guildID), Number(msg.embeds[0].title.split(' ').find(s => s.includes("#")).replace('#', '')), client, "-")
-	})
-})
-
 client.on('messageDelete', async message => {
 	await sleep(1000)
 	if (!db.has(`suggestions_${message.guildID}`)) return;
@@ -185,25 +171,33 @@ client.on('messageDelete', async message => {
 client.on('error', async error => console.error(error.stack))
 
 client.on("interactionCreate", async interaction => {
-	if(interaction instanceof Eris.CommandInteraction) {
-		let language = db.fetch(`dil_${interaction.guildID}`) || "english";
-		let langfile = require(`./languages/english.json`)
-		if (language && language != "english") langfile = require(`./languages/${language}.json`)
+	let language = db.fetch(`dil_${interaction.guildID}`) || "english";
+	let langfile = require(`./languages/english.json`)
+	if (language && language != "english") langfile = require(`./languages/${language}.json`)
+	
+	if ((interaction instanceof Eris.ComponentInteraction && (interaction.data.custom_id == 'verify_suggestion' || interaction.data.custom_id == 'delete_suggestion')) || (interaction instanceof Eris.CommandInteraction && interaction.data.type == 3)) {
+		const guild = client.guilds.get(interaction.guildID)
 		
-		if (interaction.data.type == 3) {
-			const interactedMessage = await interaction.channel.getMessage(interaction.data.target_id)
-			if (!interactedMessage.author.bot) return interaction.createMessage({content: langfile.thisIsNotSuggestion, flags: 64})
-			
-			const data = Object.values(db.fetch(`suggestions_${interaction.guildID}`)).find(s => s.msgid == interactedMessage.id)
-			if (!data) return interaction.createMessage({content: langfile.thisIsNotSuggestion, flags: 64});
-			
-			if (data.status == "deleted") return interaction.createMessage({content: langfile.suggestionAlreadyDeleted, flags: 64})
-			
+		const interactedMessage = await interaction.channel.getMessage(interaction.data.target_id || interaction.message.id)
+		if (!interactedMessage.author.bot) return interaction.createMessage({content: langfile.thisIsNotSuggestion, flags: 64})
+	
+		const data = Object.values(db.fetch(`suggestions_${interaction.guildID}`)).find(s => s.msgid == interactedMessage.id)
+		if (!data) return interaction.createMessage({content: langfile.thisIsNotSuggestion, flags: 64});
+		
+		if (interaction instanceof Eris.ComponentInteraction || interaction.data.name.startsWith("Mark Suggestion as")) {
+			const noperm = staffPermCheck(interaction.member, client)
+			if (noperm === true) return interaction.createMessage({content: langfile.staffNotEnoughPerm, flags: 64})
+		}
+		
+		if (data.status == "deleted") return interaction.createMessage({content: langfile.suggestionAlreadyDeleted, flags: 64})
+		
+		if (interaction instanceof Eris.ComponentInteraction) {
+			interaction.acknowledge()
+			if (interaction.data.custom_id == 'verify_suggestion') return verifySuggestion(interactedMessage, guild, client)
+			if (interaction.data.custom_id == 'delete_suggestion') return deleteSuggestion(guild, data.sugid, client, "-")
+		} else if (interaction.data.type == 3) {
 			if (interaction.data.name.startsWith("Mark Suggestion as")) {
 				const status = interaction.data.name.split("Mark Suggestion as ")[1].toLowerCase()
-				
-				const noperm = staffPermCheck(interaction.member, client)
-				if (noperm === true) return interaction.createMessage({content: langfile.staffNotEnoughPerm, flags: 64})
 				
 				if (data.status == "awaiting") return interaction.createMessage({content: langfile.reviewFirst, flags: 64})
 				if (data.status == status) return interaction.createMessage({content: langfile.thisSuggestionIsAlreadyMarkedAs.replace('%type%', langfile[status]), flags: 64})
@@ -221,7 +215,8 @@ client.on("interactionCreate", async interaction => {
 					interaction.createMessage({content: langfile.suggestionFollowed, flags: 64})
 				}
 			}
-		} else {
+		}
+	} else if (interaction instanceof Eris.CommandInteraction) {
 			if (client.commands.has(interaction.data.name)) {
 				const command = client.commands.get(interaction.data.name)
 				if (command.help.category == "admin") {
@@ -232,7 +227,6 @@ client.on("interactionCreate", async interaction => {
 				}
 				command.run(client, interaction, langfile)
 			}
-		}
 	}
 })
 
