@@ -351,6 +351,7 @@ module.exports = {
 					name: `${langfile.new} - ${data.authorUsername}`,
 					icon_url: message.embeds[0].author.icon_url
 				},
+				fields: loadComments(guild, data.sugid, client),
 				image: {url: data.attachment}
 			}
 		}).then(async msg => {

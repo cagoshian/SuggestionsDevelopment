@@ -6,6 +6,10 @@ const db = new arkdb.Database()
 const version = "1.0-underwork";
 const {manageSuggestion, deleteSuggestion, sendSuggestion, verifySuggestion, staffPermCheck} = require('./functions')
 
+function colorToSignedBit(s) {
+	return (parseInt(s.slice(1), 16) << 8) / 256;
+}
+
 const type3cmds = ["Mark Suggestion as Approved", "Mark Suggestion as Denied", "Mark Suggestion as Invalid", "Mark Suggestion as Implemented", "Follow Suggestion"]
 
 const client = new Eris(`Bot ${settings.token}`, {intents: ["all"]})
@@ -104,31 +108,35 @@ client.on("messageCreate", async message => {
 	})
 })
 
-/*client.on('guildCreate', async guild => {
-	let role = null;
-	const everyonerole = guild.roles.find(r => r.name.toLowerCase().includes("everyone"))
-	if (guild.memberCount >= 5000) role = everyonerole
-	else {
-		guild.fetchMembers({limit: 5000}).then(async members => {
-			for (const r of guild.roles) {
-				const currentnumber = members.filter(m => m.roles.includes(r.id)).length;
-				if (currentnumber / guild.memberCount >= 0.75) {
-					if (role === null) role = r;
-					else {
-						if (currentnumber > members.filter(m => m.roles.includes(role.id)).length) role = r;
-					}
-				}
+client.on('guildCreate', async guild => {
+	let language = db.fetch(`dil_${guild.id}`) || "english";
+	let langfile = require(`./languages/english.json`)
+	if (language && language != "english") langfile = require(`./languages/${language}.json`)
+	
+	let role = 0;
+	
+	for (const r of guild.roles) {
+		const currentnumber = r.members ? r.members.size : 0;
+		if (currentnumber / guild.memberCount >= 0.75) {
+			if (role === null) role = r;
+			else {
+				if (currentnumber > role.members.size) role = r;
 			}
-		})
-		if (role === null) role = everyonerole
+		}
 	}
-	let channels = guild.channels.filter(c => c.type == 0 && c.permissionOverwrites.has(role.id) && JSON.stringify(c.permissionOverwrites.get(role.id).json).includes('sendMessages') && c.permissionOverwrites.get(role.id).json.sendMessages != false)
-	if (channels.length <= 0) channels = guild.channels.filter(c => c.type == 0 && !c.permissionOverwrites.has(role.id) && !c.permissionOverwrites.has(everyonerole.id));
+	
+	if (role === 0) role = guild.roles.find(p => p.name == '@everyone')
+	if (!role) return;
+	
+	let channels = guild.channels.filter(c => c.type === 0 && c.permissionOverwrites.has(role.id) && c.permissionOverwrites.get(role.id).has('viewChannel') && c.permissionOverwrites.get(role.id).has('sendMessages'))
+	if (channels.length <= 0) channels = guild.channels.filter(c => c.type === 0 && !c.permissionOverwrites.has(role.id));
+	if (channels.length === 0) return;
 	let channel = 0;
-	if (channels.length > 1) {
+	if (channels.length == 1) channel = channels[0]
+	else if (channels.length > 1) {
 		let lasttimestamp = 0;
 		for (const ch of channels) {
-			ch.getMessages({limit: 1}).then(async msg => {
+			await ch.getMessages({limit: 1}).then(async msg => {
 				if (msg[0] && msg[0].timestamp > lasttimestamp) {
 					lasttimestamp = msg[0].timestamp
 					channel = ch
@@ -136,34 +144,21 @@ client.on("messageCreate", async message => {
 			})
 		}
 	}
-	if (channels.length === 0) {
-		let lasttimestamp = 0;
-		for (const ch of guild.channels.filter(c => c.type == 0)) {
-			ch.getMessages({limit: 1}).then(async msg => {
-				if (msg[0] && msg[0].timestamp > lasttimestamp) {
-					lasttimestamp = msg[0].timestamp
-					channel = ch
-				}
-			})
-		}
-	}
-	if (channel === 0) channel = channels[0]
+	
+	if (!channel) return;
+	
 	channel.createMessage({
 		embed: {
-			title: '**__Thanks for adding Suggestions bot!__**',
-			description: `This bot allows you to manage your suggestions in server easily. You can see the possible commands with **.help** command.\nThis bot won't work if you don't set any suggestion channel.\n \n**You can get help about the bot setup** With **.setupinfo** command.\n \n**This bot made by** ${user.username}#${user.discriminator}\n \n**If you have any cool idea for bot** Use **.botsuggest** command to send suggestions to owner.\n \n**Note:** In order to work properly, bot should have Manage Messages, Embed Links and Add Reactions permission.\n \n**Note for Turkish:** Eğer botu Türkçe kullanmak istiyorsanız \`.language turkish\` komuduyla botu Türkçe yapabilirsiniz, Türkçe yaptıktan sonra \`.kurulumbilgi\` ile bilgi alabilirsiniz`,
+			title: langfile.newGuildTitle,
+			description: langfile.newGuildContent,
 			color: colorToSignedBit("#2F3136"),
-			author: {
-				name: client.user.username,
-				icon_url: client.user.avatarURL || client.user.defaultAvatarURL
-			},
 			footer: {
 				text: client.user.username,
 				icon_url: client.user.avatarURL || client.user.defaultAvatarURL
 			}
 		}
 	})
-})*/
+})
 
 client.on('messageReactionAdd', async (message, emoji, user) => {
 	if (!db.has(`reviewchannel_${message.guildID}`)) return;
@@ -181,6 +176,7 @@ client.on('messageReactionAdd', async (message, emoji, user) => {
 
 client.on('messageDelete', async message => {
 	await sleep(1000)
+	if (!db.has(`suggestions_${message.guildID}`)) return;
 	const data = Object.values(db.fetch(`suggestions_${message.guildID}`)).find(s => s.msgid == message.id)
 	if (!data) return;
 	deleteSuggestion(client.guilds.get(message.guildID), data.sugid, client, "-", true)

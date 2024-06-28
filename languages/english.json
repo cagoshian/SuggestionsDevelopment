@@ -76,6 +76,9 @@
   "suggestionFollowed": "You are now following this suggestion.",
   "suggestionUnfollowed": "You unfollowed this suggestion.",
 
+  "newGuildTitle": "**__Thanks for adding Suggestions bot!__**",
+  "newGuildContent": "This bot allows you to manage your suggestions in server easily. You can see all possible commands with **/help** command.\n This bot won't work until you set a suggestion channel.\n \n**You can get help about the bot setup** With **/setupinfo** command.\n \n**If you have any cool idea for bot** Use **/botsuggest** command to send suggestions to owner.\n \n**Note:** In order to work properly, bot must have Manage Messages, Embed Links and Add Reactions permission.",
+
   "youWillGetDMs": "Hereafter, you will get a DM when an action taken on your followed suggestions.",
   "youWillNotGetDMs": "Hereafter, you will not get a DM when an action taken on your followed suggestions."
 }
