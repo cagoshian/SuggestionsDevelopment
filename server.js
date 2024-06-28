@@ -6,10 +6,6 @@ const db = new arkdb.Database()
 const version = "1.0-underwork";
 const {manageSuggestion, deleteSuggestion, sendSuggestion, verifySuggestion, staffPermCheck} = require('./functions')
 
-function colorToSignedBit(s) {
-	return (parseInt(s.slice(1), 16) << 8) / 256;
-}
-
 const type3cmds = ["Mark Suggestion as Approved", "Mark Suggestion as Denied", "Mark Suggestion as Invalid", "Mark Suggestion as Implemented", "Follow Suggestion"]
 
 const client = new Eris(`Bot ${settings.token}`, {intents: ["all"]})
@@ -151,7 +147,7 @@ client.on('guildCreate', async guild => {
 		embed: {
 			title: langfile.newGuildTitle,
 			description: langfile.newGuildContent,
-			color: colorToSignedBit("#2F3136"),
+			color: 3092790,
 			footer: {
 				text: client.user.username,
 				icon_url: client.user.avatarURL || client.user.defaultAvatarURL

@@ -1,9 +1,5 @@
 const Eris = require("eris");
 
-function colorToSignedBit(s) {
-	return (parseInt(s.slice(1), 16) << 8) / 256;
-}
-
 function loadComments(guild, sugid, client) {
 	const db = client.db
 	let language = db.fetch(`dil_${guild.id}`) || "english";
@@ -158,10 +154,10 @@ module.exports = {
 		let possibleTypes = ["approved", "denied", "invalid", "implemented"]
 		if (!possibleTypes.includes(type)) return;
 		
-		let color = colorToSignedBit("#00FF00")
-		if (type == "approved") color = colorToSignedBit("#00FF00")
+		let color = 0;
+		if (type == "approved") color = 65280
 		if (type == "denied") color = 16711680
-		if (type == "invalid") color = colorToSignedBit("#000000")
+		if (type == "invalid") color = 0
 		if (type == "implemented") color = 13631487
 		
 		if (!guild.channels.has(data.channel)) return;
@@ -244,7 +240,7 @@ module.exports = {
 				embed: {
 					title: langfile.deletedNotificationTitle,
 					description: `${langfile.deletedNotificationContent.replace('%guild%', guild.name)} ${langfile.notificationClassicContent.replace('%suggestion%', data.suggestion).replace('%sugid%', sugid).replace('%author%', data.authorUsername).replace('%staffcomment%', comment)}`,
-					color: colorToSignedBit("#000000"),
+					color: 0,
 					footer: {
 						text: langfile.disableDMsFooter,
 						icon_url: client.user.avatarURL || client.user.defaultAvatarURL
@@ -329,7 +325,7 @@ module.exports = {
 				embed: {
 					title: `${langfile.suggestion.charAt(0).toUpperCase() + langfile.suggestion.slice(1)} #${newSugId}`,
 					description: suggestion,
-					color: colorToSignedBit("#00FFFF"),
+					color: 65535,
 					author: {
 						name: `${langfile.new} - ${sender.username}`,
 						icon_url: sender.avatarURL || sender.defaultAvatarURL
@@ -365,7 +361,7 @@ module.exports = {
 			embed: {
 				title: `${langfile.suggestion.charAt(0).toUpperCase() + langfile.suggestion.slice(1)} #${data.sugid}`,
 				description: data.suggestion,
-				color: colorToSignedBit("#00FFFF"),
+				color: 65535,
 				author: {
 					name: `${langfile.new} - ${data.authorUsername}`,
 					icon_url: message.embeds[0].author.icon_url
