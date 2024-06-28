@@ -1,9 +1,4 @@
-module.exports.run = async (client, interaction) => {
-	const db = client.db
-	let dil = db.fetch(`dil_${interaction.guildID}`) || "english";
-	let langfile = require(`../languages/english.json`)
-	if (dil && dil != "english") langfile = require(`../languages/${dil}.json`)
-	
+module.exports.run = async (client, interaction, langfile) => {
 	const helpcommands = client.commands.filter(prop => prop.help.supportsSlash === true && prop.help.category == "help");
 	if (helpcommands.length === 0) return interaction.createMessage(langfile.noCommandsInCategory)
 	const helpcommandsmap = helpcommands.map(p => '**/' + p.help.name + '** ' + (p.help.description.length > 50 ? p.help.description.slice(0, 50) + `...` : p.help.description) + `\n`).join('');

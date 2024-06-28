@@ -1,10 +1,7 @@
 const Eris = require("eris");
 
-module.exports.run = async (client, interaction) => {
+module.exports.run = async (client, interaction, langfile) => {
 	const db = client.db
-	let dil = db.fetch(`dil_${interaction.guildID}`) || "english";
-	let langfile = require(`../languages/english.json`)
-	if (dil && dil != "english") langfile = require(`../languages/${dil}.json`)
 	
 	const allow = interaction.data.options[0].value
 	const allowedCurrently = !db.has(`denydm_${interaction.member.user.id}`)

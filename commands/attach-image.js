@@ -1,11 +1,8 @@
 ﻿const Eris = require("eris");
 const { attachImage } = require('../functions')
 
-module.exports.run = async (client, interaction) => {
+module.exports.run = async (client, interaction, langfile) => {
 	const db = client.db
-	let dil = db.fetch(`dil_${interaction.guildID}`) || "english";
-	let langfile = require(`../languages/english.json`)
-	if (dil && dil != "english") langfile = require(`../languages/${dil}.json`)
 	
 	const sugid = interaction.data.options[0].value
 	const attachmentLink = interaction.data.options[1].value
