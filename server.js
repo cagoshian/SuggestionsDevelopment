@@ -191,32 +191,26 @@ client.on("interactionCreate", async interaction => {
 		if (language && language != "english") langfile = require(`./languages/${language}.json`)
 		
 		if (interaction.data.type == 3) {
+			const interactedMessage = await interaction.channel.getMessage(interaction.data.target_id)
+			if (!interactedMessage.author.bot) return interaction.createMessage({content: langfile.thisIsNotSuggestion, flags: 64})
+			
+			const data = Object.values(db.fetch(`suggestions_${interaction.guildID}`)).find(s => s.msgid == interactedMessage.id)
+			if (!data) return interaction.createMessage({content: langfile.thisIsNotSuggestion, flags: 64});
+			
+			if (data.status == "deleted") return interaction.createMessage({content: langfile.suggestionAlreadyDeleted, flags: 64})
+			
 			if (interaction.data.name.startsWith("Mark Suggestion as")) {
 				const status = interaction.data.name.split("Mark Suggestion as ")[1].toLowerCase()
 				
 				const noperm = staffPermCheck(interaction.member, client)
 				if (noperm === true) return interaction.createMessage({content: langfile.staffNotEnoughPerm, flags: 64})
 				
-				const interactedMessage = await interaction.channel.getMessage(interaction.data.target_id)
-				if (!interactedMessage.author.bot) return;
-				
-				const data = Object.values(db.fetch(`suggestions_${interaction.guildID}`)).find(s => s.msgid == interactedMessage.id)
-				if (!data) return;
-				
 				if (data.status == "awaiting") return interaction.createMessage({content: langfile.reviewFirst, flags: 64})
-				if (data.status == "deleted") return interaction.createMessage({content: langfile.suggestionAlreadyDeleted, flags: 64})
 				if (data.status == status) return interaction.createMessage({content: langfile.thisSuggestionIsAlreadyMarkedAs.replace('%type%', langfile[status]), flags: 64})
 				
 				await manageSuggestion(interaction.member.user, client.guilds.get(interaction.guildID), data.sugid, status, client, "-")
 				interaction.createMessage({content: langfile.suggestionMarkedAs.replace('%type%', langfile[status]), flags: 64})
 			} else if (interaction.data.name == "Follow Suggestion") {
-				const interactedMessage = await interaction.channel.getMessage(interaction.data.target_id)
-				if (!interactedMessage.author.bot) return;
-				
-				const data = Object.values(db.fetch(`suggestions_${interaction.guildID}`)).find(s => s.msgid == interactedMessage.id)
-				if (!data) return;
-				
-				if (data.status == "deleted") return interaction.createMessage({content: langfile.suggestionAlreadyDeleted, flags: 64})
 				if (data.followers.includes(interaction.member.user.id)) {
 					data.followers = data.followers.filter(f => f !== interaction.member.user.id)
 					db.set(`suggestions_${interaction.guildID}.${data.sugid}`, data)

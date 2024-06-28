@@ -20,6 +20,7 @@
   "noSuggestionChannel": "This guild doesn't have a suggestion channel.",
   "reviewFirst": "You must verify or delete this suggestion in review channel before using this command.",
   "suggestionAlreadyDeleted": "This suggestion was deleted!",
+  "thisIsNotSuggestion": "This message is not a suggestion!",
 
   "approved": "Approved suggestion",
   "denied": "Denied suggestion",
