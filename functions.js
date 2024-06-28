@@ -151,7 +151,7 @@ module.exports = {
 		const data = db.fetch(`suggestions_${guild.id}.${sugid}`)
 		if (!data) return;
 		
-		let possibleTypes = ["approved", "denied", "invalid", "implemented"]
+		let possibleTypes = ["approved", "denied", "invalid", "implemented", "new"]
 		if (!possibleTypes.includes(type)) return;
 		
 		let color = 0;
@@ -159,6 +159,7 @@ module.exports = {
 		if (type == "denied") color = 16711680
 		if (type == "invalid") color = 0
 		if (type == "implemented") color = 13631487
+		if (type == "new") color = 65535
 		
 		if (!guild.channels.has(data.channel)) return;
 		guild.channels.get(data.channel).getMessage(data.msgid).then(msg => {
@@ -180,7 +181,11 @@ module.exports = {
 				msg.edit({
 					embed: embedObject
 				})
-				msg.removeReactions()
+				if (type != "new") msg.removeReactions()
+				else if (!db.has(`denyvoting_${guild.id}`)) {
+					msg.addReaction(`👍`)
+					msg.addReaction(`👎`)
+				}
 			}
 			if (db.has(`${type.toLowerCase()}channel_${guild.id}`) && db.fetch(`${type.toLowerCase()}channel_${guild.id}`) != msg.channel.id && msg.channel.guild.channels.has(db.fetch(`${type.toLowerCase()}channel_${guild.id}`))) {
 				msg.channel.guild.channels.get(db.fetch(`${type.toLowerCase()}channel_${guild.id}`)).createMessage({
@@ -189,6 +194,10 @@ module.exports = {
 					data.channel = msg2.channel.id
 					data.msgid = msg2.id
 					msg.delete()
+					if (type == "new" && !db.has(`denyvoting_${guild.id}`)) {
+						msg.addReaction(`👍`)
+						msg.addReaction(`👎`)
+					}
 				})
 			}
 			data.status = type
@@ -332,7 +341,7 @@ module.exports = {
 					}
 				}
 			}).then(async msg => {
-				sugData.status = "awaiting"
+				sugData.status = "new"
 				sugData.msgid = msg.id
 				sugData.channel = suggestionchannel
 				db.set(`suggestions_${guild.id}.${newSugId}`, sugData)

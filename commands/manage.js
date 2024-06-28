@@ -15,7 +15,10 @@ module.exports.run = async (client, interaction) => {
 	
 	if (!data) return interaction.createMessage({content: langfile.noSuggestionWithThisNumber, flags: 64})
 	if (data.status == "awaiting") return interaction.createMessage({content: langfile.reviewFirst, flags: 64})
-	if (data.status == "deleted") return interaction.createMessage({content: langfile.suggestionAlreadyDeleted, flags: 64})
+	if (data.status == "deleted") return interaction.createMessage({
+		content: langfile.suggestionAlreadyDeleted,
+		flags: 64
+	})
 	
 	if (managingType != "deleted") await manageSuggestion(interaction.member.user, client.guilds.get(interaction.guildID), sugid, managingType, client, comment)
 	else await deleteSuggestion(client.guilds.get(interaction.guildID), sugid, client, comment)
@@ -40,27 +43,31 @@ module.exports.help = {
 			type: Eris.Constants.ApplicationCommandOptionTypes.STRING,
 			required: true,
 			choices: [
-                        {
-                            "name": "Approved",
-                            "value": "approved"
-                        },
-                        {
-                            "name": "Denied",
-                            "value": "denied"
-                        },
-                        {
-                            "name": "Invalid",
-                            "value": "invalid"
-                        },
-						{
-                            "name": "Implemented",
-                            "value": "implemented"
-                        },
-						{
-                            "name": "Deleted",
-                            "value": "deleted"
-                        }
-                    ]
+				{
+					"name": "Approved",
+					"value": "approved"
+				},
+				{
+					"name": "Denied",
+					"value": "denied"
+				},
+				{
+					"name": "Invalid",
+					"value": "invalid"
+				},
+				{
+					"name": "Implemented",
+					"value": "implemented"
+				},
+				{
+					"name": "New",
+					"value": "new"
+				},
+				{
+					"name": "Deleted",
+					"value": "deleted"
+				}
+			]
 		},
 		{
 			name: "comment",
